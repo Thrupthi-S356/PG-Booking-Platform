@@ -85,7 +85,7 @@ export default function PGCard({ pg }) {
             <span className="text-brand-400 font-bold text-lg">₹{pg.price.toLocaleString()}</span>
             <span className="text-slate-500 text-xs">/month</span>
           </div>
-          <Link to={`/pg/${pg.id}`}>
+          <Link to={`/pg/${pg._id}`}>
             <Button size="sm" variant={pg.available ? 'primary' : 'secondary'}>
               View Details
             </Button>

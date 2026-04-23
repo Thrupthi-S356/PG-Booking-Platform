@@ -39,7 +39,7 @@ export default function PGDetails() {
     if (!isAuthenticated) { navigate('/login'); return; }
     setBookingLoading(true);
     try {
-      await bookingService.requestBooking(pg.id, bookingForm);
+      await bookingService.requestBooking(pg._id, bookingForm);
       setBookingModal(false);
       showToast('Booking request sent! Owner will respond shortly.', 'success');
     } catch {

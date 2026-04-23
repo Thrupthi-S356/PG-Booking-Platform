@@ -75,7 +75,7 @@ export default function MapView() {
               />
               {pgs.map(pg => (
                 <MapComponents.Marker
-                  key={pg.id}
+                  key={pg._id}
                   position={[pg.location.lat, pg.location.lng]}
                   eventHandlers={{ click: () => setSelected(pg) }}
                 >
@@ -107,10 +107,10 @@ export default function MapView() {
         <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
           {pgs.map(pg => (
             <div
-              key={pg.id}
+              key={pg._id}
               onClick={() => setSelected(pg)}
               className={`glass rounded-xl border p-4 cursor-pointer transition-all hover:border-brand-500/40 ${
-                selected?.id === pg.id ? 'border-brand-500/60 bg-brand-500/5' : 'border-white/5'
+                selected?._id === pg._id ? 'border-brand-500/60 bg-brand-500/5' : 'border-white/5'
               }`}
             >
               <div className="flex gap-3">
@@ -149,7 +149,7 @@ export default function MapView() {
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <Link to={`/pg/${selected.id}`}>
+              <Link to={`/pg/${selected._id}`}>
                 <Button size="sm">View Details</Button>
               </Link>
               <button onClick={() => setSelected(null)} className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5">

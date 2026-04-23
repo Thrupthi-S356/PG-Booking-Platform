@@ -28,7 +28,7 @@ export default function OwnerDashboard() {
 
   const handleDelete = async (id) => {
     await pgService.delete(id);
-    setListings(l => l.filter(p => p.id !== id));
+    setListings(l => l.filter(p => p._id !== id));
     setDeleteId(null);
     showToast('Listing deleted successfully', 'info');
   };
@@ -104,7 +104,7 @@ export default function OwnerDashboard() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {listings.map(pg => (
-              <div key={pg.id} className="glass rounded-2xl border border-white/5 overflow-hidden hover:border-white/10 transition-all">
+              <div key={pg._id} className="glass rounded-2xl border border-white/5 overflow-hidden hover:border-white/10 transition-all">
                 <div className="relative h-40">
                   <img src={pg.images[0]} alt={pg.title} className="w-full h-full object-cover" />
                   <div className={`absolute top-3 right-3 w-2.5 h-2.5 rounded-full ${pg.available ? 'bg-emerald-400' : 'bg-red-400'}`} />
@@ -122,7 +122,7 @@ export default function OwnerDashboard() {
                   </div>
                   <div className="flex gap-2 mt-4">
                     <Button variant="secondary" size="sm" className="flex-1" icon={<Edit size={13} />}>Edit</Button>
-                    <Button variant="danger" size="sm" icon={<Trash2 size={13} />} onClick={() => setDeleteId(pg.id)}>Delete</Button>
+                    <Button variant="danger" size="sm" icon={<Trash2 size={13} />} onClick={() => setDeleteId(pg._id)}>Delete</Button>
                   </div>
                 </div>
               </div>
