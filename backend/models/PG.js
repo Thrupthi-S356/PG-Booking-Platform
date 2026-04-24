@@ -20,6 +20,7 @@ const pgSchema = new mongoose.Schema({
     name:  { type: String },
     phone: { type: String },
     since: { type: String },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
   rooms: [
     {

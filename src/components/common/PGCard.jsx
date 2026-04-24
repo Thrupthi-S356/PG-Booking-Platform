@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Star, Wifi, Coffee, Wind, WashingMachine, Shield, Car } from 'lucide-react';
 import Button from './Button';
+import StarRating from './StarRating';
 
 const amenityIcons = {
   WiFi: <Wifi size={12} />, Meals: <Coffee size={12} />, AC: <Wind size={12} />,
@@ -55,11 +56,8 @@ export default function PGCard({ pg }) {
       <div className="p-4">
         <div className="flex items-start justify-between gap-2 mb-2">
           <h3 className="font-semibold text-white text-base leading-tight">{pg.title}</h3>
-          <div className="flex items-center gap-1 shrink-0">
-            <Star size={13} className="fill-amber-400 text-amber-400" />
-            <span className="text-sm font-semibold text-amber-400">{pg.rating}</span>
-            <span className="text-xs text-slate-500">({pg.reviews})</span>
-          </div>
+         
+          <StarRating rating={pg.rating} reviews={pg.reviews} size="sm" />
         </div>
 
         <div className="flex items-center gap-1 text-slate-400 text-xs mb-3">

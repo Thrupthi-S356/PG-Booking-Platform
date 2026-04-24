@@ -73,7 +73,7 @@ export default function MapView() {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; OpenStreetMap contributors'
               />
-              {pgs.map(pg => (
+              {pgs.filter(pg => pg.location?.lat && pg.location?.lng).map(pg=>(
                 <MapComponents.Marker
                   key={pg._id}
                   position={[pg.location.lat, pg.location.lng]}
