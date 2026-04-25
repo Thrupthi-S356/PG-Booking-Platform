@@ -48,6 +48,29 @@ export const authService = {
   },
 };
 
+
+export const uploadService = {
+  uploadImages: async (files) => {
+    const formData = new FormData();
+    files.forEach(file => formData.append('images', file));
+    const token = localStorage.getItem('pg_token');
+    const res = await axios.post(
+      (import.meta.env.VITE_API_URL || 'http://localhost:5000/v1') + '/upload',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return res.data.urls;
+  },
+  deleteImage: async (url) => {
+    await api.delete('/upload', { data: { url } });
+  },
+};
+
 // ── PG LISTINGS ───────────────────────────────────────────────────────
 
 export const pgService = {

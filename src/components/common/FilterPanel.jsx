@@ -1,7 +1,16 @@
 import React from 'react';
 import { SlidersHorizontal, X } from 'lucide-react';
-import { cities, amenityOptions } from '../../data/mockData';
+
 import Button from './Button';
+
+const cities = [
+  'Bangalore', 'Mumbai', 'Hyderabad', 'Pune', 'Delhi', 'Chennai'
+];
+
+const amenityOptions = [
+  'WiFi', 'Meals', 'AC', 'Laundry', 'Parking',
+  'Security', 'Gym', 'CCTV', 'Power Backup', 'Housekeeping'
+];
 
 export default function FilterPanel({ filters, onChange, onReset }) {
   const update = (key, val) => onChange({ ...filters, [key]: val });

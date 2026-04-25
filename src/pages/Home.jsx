@@ -7,7 +7,7 @@ import { SkeletonCard } from '../components/common/Skeleton';
 import EmptyState from '../components/common/EmptyState';
 import Button from '../components/common/Button';
 import { Link } from 'react-router-dom';
-import { cities } from '../data/mockData';
+const cities = ['Bangalore', 'Mumbai', 'Hyderabad', 'Pune', 'Delhi', 'Chennai'];
 
 const defaultFilters = { city: '', type: '', minPrice: '', maxPrice: '', amenities: [], search: '' };
 

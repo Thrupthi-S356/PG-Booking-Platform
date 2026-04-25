@@ -1,12 +1,10 @@
 
-
-
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-
+const { protect, ownerOnly } = require('../middleware/auth');
 // Register
 router.post('/register', async (req, res) => {
   try {
@@ -56,6 +54,18 @@ router.post('/login', async (req, res) => {
 
   } catch (err) {
     console.error('Login error:', err.message);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// GET /v1/auth/chat-users — returns everyone the logged-in user can chat with
+router.get('/chat-users', protect, async (req, res) => {
+  try {
+    // return all users EXCEPT the logged-in user themselves
+    const users = await User.find({ _id: { $ne: req.user._id } })
+      .select('name email role _id');
+    res.json(users);
+  } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });

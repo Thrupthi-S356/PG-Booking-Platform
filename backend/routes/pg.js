@@ -1,5 +1,4 @@
 
-
 const express = require('express');
 const router = express.Router();
 const PG = require('../models/PG');
@@ -58,28 +57,62 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST create PG
+
+
 router.post('/', protect, ownerOnly, async (req, res) => {
   try {
-    const { title, city, area, price, type, images, amenities } = req.body;
+      
+    const { title, city, area, price, type, images, amenities, rooms, ownerPhone } = req.body;
+
+    if (!title || !city || !price) {
+      return res.status(400).json({ message: 'Title, city and price are required' });
+    }
+
+    // ✅ Make sure req.user._id exists before creating
+    if (!req.user?._id) {
+      return res.status(401).json({ message: 'User not authenticated properly' });
+    }
+
     const pg = await PG.create({
-      ...req.body,
-        rating: 0,   
-        reviews: 0, 
-      location: { city, area },
+      title,
+      description: req.body.description || '',
+      location: {
+        city,
+        area: area || city,
+        lat: null,
+        lng: null,
+      },
+      price:     Number(price),
+      type:      type || 'coed',
+      available: true,
+      images:    Array.isArray(images) ? images : [images || 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80'],
+      amenities: Array.isArray(amenities) ? amenities : ['WiFi'],
+      rooms: Array.isArray(rooms) && rooms.length > 0
+        ? rooms.map(r => ({
+            type:      r.type || 'Single',
+            price:     Number(r.price) || Number(price),
+            available: Number(r.available) || 1,
+          }))
+        : [{ type: 'Single', price: Number(price), available: 1 }],
+      rating:  0,
+      reviews: 0,
       owner: {
-        name: req.user.name,
-        phone: req.body.ownerPhone || '',
-        since: new Date().getFullYear().toString(),
-        userId: req.user._id,   // ✅ store owner's user ID
+        name:   req.user.name,
+        phone:  ownerPhone || '',
+        since:  new Date().getFullYear().toString(),
+        userId: req.user._id,
       },
     });
+
+    console.log('✅ PG created:', pg._id);
     res.status(201).json(pg);
+
   } catch (err) {
+    console.error('❌ Create PG error:', err.message);
+    console.error('Full error:', err); // ✅ shows exactly which field failed
     res.status(500).json({ message: err.message });
   }
 });
-
 
 // PUT update PG
 router.put('/:id',protect,ownerOnly, async (req, res) => {
