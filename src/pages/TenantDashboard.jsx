@@ -86,7 +86,13 @@ export default function TenantDashboard() {
             return (
               <div key={booking.id} className="glass rounded-2xl border border-white/5 hover:border-white/10 transition-all overflow-hidden">
                 <div className="flex flex-col sm:flex-row">
-                  <img src={booking.image} alt={booking.pgTitle} className="w-full sm:w-36 h-32 sm:h-auto object-cover" />
+                  {/* <img src={booking.image} alt={booking.pgTitle} className="w-full sm:w-36 h-32 sm:h-auto object-cover" /> */}
+                  <img 
+  src={booking.image || 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=400&q=80'} 
+  alt={booking.pgTitle} 
+  className="w-full sm:w-36 h-32 sm:h-auto object-cover"
+  onError={e => { e.target.src = 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=400&q=80'; }}
+/>
                   <div className="flex-1 p-5">
                     <div className="flex items-start justify-between flex-wrap gap-3">
                       <div>
@@ -102,7 +108,7 @@ export default function TenantDashboard() {
                     <div className="flex flex-wrap gap-4 mt-4 text-sm text-slate-400">
                       <span className="flex items-center gap-1.5"><Home size={13} />{booking.roomType}</span>
                       <span className="flex items-center gap-1.5"><Calendar size={13} />Move-in: {booking.checkIn}</span>
-                      <span className="text-brand-400 font-semibold">₹{booking.price.toLocaleString()}/month</span>
+                      <span className="text-brand-400 font-semibold">₹{Number(booking.price || 0).toLocaleString()}/month</span>
                     </div>
                     <div className="flex items-center justify-between mt-4">
                       <p className="text-xs text-slate-500">Booking ID: {booking.id}</p>

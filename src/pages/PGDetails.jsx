@@ -23,7 +23,7 @@ const mockReviews = [
 export default function PGDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated, showToast } = useApp();
+  const { isAuthenticated, showToast,user} = useApp();
   const [pg, setPg] = useState(null);
   const [loading, setLoading] = useState(true);
   const [imgIdx, setImgIdx] = useState(0);
@@ -39,7 +39,7 @@ export default function PGDetails() {
     if (!isAuthenticated) { navigate('/login'); return; }
     setBookingLoading(true);
     try {
-      await bookingService.requestBooking(pg.id, bookingForm);
+      await bookingService.requestBooking(pg._id, bookingForm);
       setBookingModal(false);
       showToast('Booking request sent! Owner will respond shortly.', 'success');
     } catch {
@@ -199,7 +199,12 @@ export default function PGDetails() {
               className="w-full"
               size="lg"
               disabled={!pg.available}
-              onClick={() => isAuthenticated ? setBookingModal(true) : navigate('/login')}
+              // onClick={() => isAuthenticated ? setBookingModal(true) : navigate('/login')}
+              onClick={() => {
+  if (!isAuthenticated) { navigate('/login'); return; }
+  if (user?.role === 'owner') { showToast("Owners can't book PGs", 'error'); return; }
+  setBookingModal(true);
+}}
             >
               {isAuthenticated ? 'Request Booking' : 'Sign in to Book'}
             </Button>

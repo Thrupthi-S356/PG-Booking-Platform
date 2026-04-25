@@ -7,7 +7,7 @@ import { SkeletonCard } from '../components/common/Skeleton';
 import EmptyState from '../components/common/EmptyState';
 import Button from '../components/common/Button';
 import { Link } from 'react-router-dom';
-import { cities } from '../data/mockData';
+const cities = ['Bangalore', 'Mumbai', 'Hyderabad', 'Pune', 'Delhi', 'Chennai'];
 
 const defaultFilters = { city: '', type: '', minPrice: '', maxPrice: '', amenities: [], search: '' };
 
@@ -176,7 +176,7 @@ export default function Home() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
                 {pgs.map((pg, i) => (
-                  <div key={pg.id} className="animate-slide-up" style={{ animationDelay: `${i * 60}ms` }}>
+                  <div key={pg._id} className="animate-slide-up" style={{ animationDelay: `${i * 60}ms` }}>
                     <PGCard pg={pg} />
                   </div>
                 ))}

@@ -29,7 +29,7 @@ export default function Register() {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setLoading(true);
     try {
-      await register({ name: form.name, email: form.email, role: form.role });
+      await register({ name: form.name, email: form.email,password: form.password,role: form.role });
       navigate(form.role === 'owner' ? '/dashboard/owner' : '/');
     } catch (err) {
       setErrors({ general: 'Registration failed. Please try again.' });
