@@ -4,6 +4,8 @@ const router = express.Router();
 const PG = require('../models/PG');
 const Booking = require('../models/Booking');
 const { protect, ownerOnly } = require('../middleware/auth');
+const axios = require('axios');
+
 
 // GET all PGs with filters
 router.get('/', async (req, res) => {
@@ -59,33 +61,109 @@ router.get('/:id', async (req, res) => {
 
 
 
+// router.post('/', protect, ownerOnly, async (req, res) => {
+//   try {
+      
+//     const { title, city, area, price, type, images, amenities, rooms, ownerPhone } = req.body;
+
+//     if (!title || !city || !price) {
+//       return res.status(400).json({ message: 'Title, city and price are required' });
+//     }
+
+//     // ✅ Make sure req.user._id exists before creating
+//     if (!req.user?._id) {
+//       return res.status(401).json({ message: 'User not authenticated properly' });
+//     }
+
+//     const pg = await PG.create({
+//       title,
+//       description: req.body.description || '',
+//       location: {
+//         city,
+//         area: area || city,
+//         lat: null,
+//         lng: null,
+//       },
+//       price:     Number(price),
+//       type:      type || 'coed',
+//       available: true,
+//       images:    Array.isArray(images) ? images : [images || 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80'],
+//       amenities: Array.isArray(amenities) ? amenities : ['WiFi'],
+//       rooms: Array.isArray(rooms) && rooms.length > 0
+//         ? rooms.map(r => ({
+//             type:      r.type || 'Single',
+//             price:     Number(r.price) || Number(price),
+//             available: Number(r.available) || 1,
+//           }))
+//         : [{ type: 'Single', price: Number(price), available: 1 }],
+//       rating:  0,
+//       reviews: 0,
+//       owner: {
+//         name:   req.user.name,
+//         phone:  ownerPhone || '',
+//         since:  new Date().getFullYear().toString(),
+//         userId: req.user._id,
+//       },
+//     });
+
+//     console.log('✅ PG created:', pg._id);
+//     res.status(201).json(pg);
+
+//   } catch (err) {
+//     console.error('❌ Create PG error:', err.message);
+//     console.error('Full error:', err); // ✅ shows exactly which field failed
+//     res.status(500).json({ message: err.message });
+//   }
+// });
+
+
+
 router.post('/', protect, ownerOnly, async (req, res) => {
   try {
-      
-    const { title, city, area, price, type, images, amenities, rooms, ownerPhone } = req.body;
+    const { title, city, area, price, type, amenities, rooms, ownerPhone } = req.body;
 
     if (!title || !city || !price) {
       return res.status(400).json({ message: 'Title, city and price are required' });
     }
 
-    // ✅ Make sure req.user._id exists before creating
-    if (!req.user?._id) {
-      return res.status(401).json({ message: 'User not authenticated properly' });
+    // ✅ Auto fetch coordinates from city and area
+    let lat = null;
+    let lng = null;
+    try {
+      const query    = `${area || city} ${city} India`;
+      const geoUrl   = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
+      const geoRes   = await axios.get(geoUrl, {
+        headers: { 'User-Agent': 'PGFinderApp/1.0' }
+      });
+      if (geoRes.data && geoRes.data.length > 0) {
+        lat = parseFloat(geoRes.data[0].lat);
+        lng = parseFloat(geoRes.data[0].lon);
+        console.log('✅ Coordinates fetched:', lat, lng);
+      }
+    } catch (geoErr) {
+      console.log('⚠️ Could not fetch coordinates:', geoErr.message);
+      // Don't fail the whole request if geo fails
     }
+
+    const rawImages  = Array.isArray(req.body.images) ? req.body.images : [req.body.images];
+    const finalImages = rawImages.filter(img => typeof img === 'string' && img.startsWith('http'));
+    const images = finalImages.length > 0
+      ? finalImages
+      : ['https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80'];
 
     const pg = await PG.create({
       title,
       description: req.body.description || '',
       location: {
         city,
-        area: area || city,
-        lat: null,
-        lng: null,
+        area:  area || city,
+        lat,   // ✅ auto fetched
+        lng,   // ✅ auto fetched
       },
       price:     Number(price),
       type:      type || 'coed',
       available: true,
-      images:    Array.isArray(images) ? images : [images || 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80'],
+      images,
       amenities: Array.isArray(amenities) ? amenities : ['WiFi'],
       rooms: Array.isArray(rooms) && rooms.length > 0
         ? rooms.map(r => ({
@@ -104,16 +182,13 @@ router.post('/', protect, ownerOnly, async (req, res) => {
       },
     });
 
-    console.log('✅ PG created:', pg._id);
     res.status(201).json(pg);
 
   } catch (err) {
     console.error('❌ Create PG error:', err.message);
-    console.error('Full error:', err); // ✅ shows exactly which field failed
     res.status(500).json({ message: err.message });
   }
 });
-
 // PUT update PG
 router.put('/:id',protect,ownerOnly, async (req, res) => {
   try {

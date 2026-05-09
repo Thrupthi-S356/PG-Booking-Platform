@@ -49,8 +49,8 @@ export default function Contact() {
         {/* Info Cards */}
         <div className="lg:col-span-2 space-y-4">
           {[
-            { icon: Mail, title: 'Email Us', sub: 'swatishet04@gmail.com', color: 'text-brand-400 bg-brand-400/10' },
-            { icon: Phone, title: 'Call Us', sub: '+91 9035048990', color: 'text-emerald-400 bg-emerald-400/10' },
+            { icon: Mail, title: 'Email Us', sub: 'spandanamj0495@gmail.com', color: 'text-brand-400 bg-brand-400/10' },
+            { icon: Phone, title: 'Call Us', sub: '+91 8431221297', color: 'text-emerald-400 bg-emerald-400/10' },
             { icon: MapPin, title: 'Office', sub: 'Manglore, Karnataka', color: 'text-blue-400 bg-blue-400/10' },
             { icon: Clock, title: 'Working Hours', sub: 'Mon–Sat, 9 AM – 7 PM', color: 'text-amber-400 bg-amber-400/10' },
           ].map(({ icon: Icon, title, sub, color }) => (
