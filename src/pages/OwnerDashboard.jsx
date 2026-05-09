@@ -11,6 +11,20 @@ import { SkeletonCard } from '../components/common/Skeleton';
 
 const inp = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500/50 placeholder-slate-600";
 
+const geocodeAddress = async (area, city) => {
+  try {
+    const query = `${area || ''} ${city}`.trim();
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`
+    );
+    const data = await res.json();
+    if (data.length > 0) {
+      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    }
+  } catch {}
+  return { lat: null, lng: null };
+};
+
 const Field = ({ label, children }) => (
   <div>
     {label && <label className="text-sm font-medium text-slate-300 mb-1.5 block">{label}</label>}
@@ -159,6 +173,8 @@ const PGFormBody = ({ data, setData, onSubmit, loading: busy, onCancel, submitLa
       </Field>
     </div>
 
+   
+
     <div className="grid grid-cols-2 gap-3">
       <Field label="Starting price (₹/mo) *">
         <input type="number" placeholder="8000" value={data.price}
@@ -289,28 +305,53 @@ export default function OwnerDashboard() {
     }
   };
 
+  // const handleAddPG = async () => {
+  //   setAddLoading(true);
+  //   try {
+  //     const created = await pgService.create({
+  //       title:       newPG.title,
+  //       city:        newPG.city,
+  //       area:        newPG.area || newPG.city,
+  //       price:       Number(newPG.price),
+  //       type:        newPG.type,
+  //       description: '',
+  //       // ✅ images is already array of real URLs from multer
+  //       images: newPG.images?.length > 0
+  //         ? newPG.images
+  //         : ['https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80'],
+  //       amenities:  ['WiFi'],
+  //       ownerPhone: newPG.phone || '',
+  //       rooms: newPG.rooms.map(r => ({
+  //         type:      r.type || 'Single',
+  //         price:     Number(r.price) || Number(newPG.price),
+  //         available: Number(r.available) || 1,
+  //       })),
+  //     });
   const handleAddPG = async () => {
-    setAddLoading(true);
-    try {
-      const created = await pgService.create({
-        title:       newPG.title,
-        city:        newPG.city,
-        area:        newPG.area || newPG.city,
-        price:       Number(newPG.price),
-        type:        newPG.type,
-        description: '',
-        // ✅ images is already array of real URLs from multer
-        images: newPG.images?.length > 0
-          ? newPG.images
-          : ['https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80'],
-        amenities:  ['WiFi'],
-        ownerPhone: newPG.phone || '',
-        rooms: newPG.rooms.map(r => ({
-          type:      r.type || 'Single',
-          price:     Number(r.price) || Number(newPG.price),
-          available: Number(r.available) || 1,
-        })),
-      });
+  setAddLoading(true);
+  try {
+    // ✅ Auto-geocode from city + area
+    const { lat, lng } = await geocodeAddress(newPG.area, newPG.city);
+
+    const created = await pgService.create({
+      title:       newPG.title,
+      city:        newPG.city,
+      area:        newPG.area || newPG.city,
+      price:       Number(newPG.price),
+      type:        newPG.type,
+      description: '',
+      images: newPG.images?.length > 0
+        ? newPG.images
+        : ['https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80'],
+      amenities:  ['WiFi'],
+      ownerPhone: newPG.phone || '',
+      location: { city: newPG.city, area: newPG.area || newPG.city, lat, lng }, // ✅
+      rooms: newPG.rooms.map(r => ({
+        type:      r.type || 'Single',
+        price:     Number(r.price) || Number(newPG.price),
+        available: Number(r.available) || 1,
+      })),
+    });
       setListings(l => [created, ...l]);
       setAddModal(false);
       setNewPG(blankPG);
@@ -341,16 +382,29 @@ export default function OwnerDashboard() {
     setEditModal(true);
   };
 
+  // const handleEditSave = async () => {
+  //   setEditLoading(true);
+  //   try {
+  //     const updated = await pgService.update(editPG._id, {
+  //       title:     editPG.title,
+  //       price:     Number(editPG.price),
+  //       type:      editPG.type,
+  //       available: editPG.available,
+  //       location:  { city: editPG.city, area: editPG.area },
+
   const handleEditSave = async () => {
-    setEditLoading(true);
-    try {
-      const updated = await pgService.update(editPG._id, {
-        title:     editPG.title,
-        price:     Number(editPG.price),
-        type:      editPG.type,
-        available: editPG.available,
-        location:  { city: editPG.city, area: editPG.area },
-        // ✅ images is array of real URLs
+  setEditLoading(true);
+  try {
+    // ✅ Re-geocode if city/area changed
+    const { lat, lng } = await geocodeAddress(editPG.area, editPG.city);
+
+    const updated = await pgService.update(editPG._id, {
+      title:     editPG.title,
+      price:     Number(editPG.price),
+      type:      editPG.type,
+      available: editPG.available,
+      location:  { city: editPG.city, area: editPG.area, lat, lng }, 
+       
         images: editPG.images?.length > 0
           ? editPG.images
           : ['https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80'],
