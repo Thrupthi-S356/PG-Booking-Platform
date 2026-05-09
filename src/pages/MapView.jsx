@@ -1,10 +1,10 @@
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, Navigation, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { pgService } from '../services/api';
 import Button from '../components/common/Button';
-import StarRating from '../components/common/StarRating';
 
 // ── Distance calculator ──────────────────────────────────────────────
 function getDistanceKm(lat1, lng1, lat2, lng2) {
@@ -39,33 +39,6 @@ function FlyToMarkerInner({ position, useMap }) {
   return null;
 }
 
-// ── RecenterMap — flies to user location ─────────────────────────────
-function RecenterMap({ center }) {
-  const [useMap, setUseMap] = useState(null);
-  useEffect(() => {
-    import('react-leaflet').then(m => setUseMap(() => m.useMap));
-  }, []);
-  if (!useMap) return null;
-  return <RecenterMapInner center={center} useMap={useMap} />;
-}
-
-function RecenterMapInner({ center, useMap }) {
-  const map = useMap();
-  const prevCenter = useRef(null);
-
-  useEffect(() => {
-    if (
-      map &&
-      center &&
-      (prevCenter.current?.[0] !== center[0] || prevCenter.current?.[1] !== center[1])
-    ) {
-      map.flyTo(center, 15, { duration: 1.5 });
-      prevCenter.current = center;
-    }
-  }, [center[0], center[1], map]);
-  return null;
-}
-
 // ── Radius options ───────────────────────────────────────────────────
 const RADIUS_OPTIONS = [
   { label: '2 km',   value: 2   },
@@ -75,7 +48,7 @@ const RADIUS_OPTIONS = [
   { label: '100 km', value: 100 },
 ];
 
-// Fallback center (Bantwal) — only used when map first loads and no GPS yet
+// Fallback center — only used when map first loads and no GPS yet
 const FALLBACK_CENTER = [12.8942, 75.0085];
 
 export default function MapView() {
@@ -89,7 +62,7 @@ export default function MapView() {
   const [radiusKm, setRadiusKm]           = useState(100);
   const [MapComponents, setMapComponents] = useState(null);
 
-  // ── Map center: use user location if known, else fallback ───────
+  // Map center: use user location if known, else fallback
   const activeCenter = userLocation
     ? [userLocation.lat, userLocation.lng]
     : FALLBACK_CENTER;
@@ -97,7 +70,6 @@ export default function MapView() {
   // ── Load PGs and Leaflet on mount ────────────────────────────────
   useEffect(() => {
     pgService.getAll().then(data => {
-      // Debug: log PGs with missing coords
       const missing = data.filter(pg => !pg.location?.lat || !pg.location?.lng);
       if (missing.length > 0) {
         console.warn('⚠️ PGs with missing coordinates (will be skipped):', missing.map(p => p.title));
@@ -131,13 +103,13 @@ export default function MapView() {
     const withDistance = pgs
       .map(pg => {
         const coords = getCoords(pg);
-        if (!coords) return null; // skip PGs with no real coordinates
+        if (!coords) return null;
         return {
           ...pg,
           distanceKm: getDistanceKm(location.lat, location.lng, coords.lat, coords.lng),
         };
       })
-      .filter(Boolean); // remove nulls
+      .filter(Boolean);
 
     const nearby = withDistance
       .filter(pg => pg.distanceKm <= radius)
@@ -150,7 +122,7 @@ export default function MapView() {
   // ── Click PG in list ─────────────────────────────────────────────
   const handlePGClick = (pg) => {
     const coords = getCoords(pg);
-    if (!coords) return; // safety: no coords, nothing to fly to
+    if (!coords) return;
 
     const dist = userLocation
       ? getDistanceKm(userLocation.lat, userLocation.lng, coords.lat, coords.lng)
@@ -163,7 +135,6 @@ export default function MapView() {
   // ── Near Me toggle ───────────────────────────────────────────────
   const handleNearMe = () => {
     if (nearMeActive) {
-      // Clear near me — but keep userLocation so map doesn't jump back to fallback
       setNearMeActive(false);
       setDisplayPgs(allPgs);
       setSelected(null);
@@ -179,19 +150,15 @@ export default function MapView() {
     setLocLoading(true);
     navigator.geolocation.getCurrentPosition(
       pos => {
-        const location = {
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-        };
+        const location = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         console.log('📍 Fresh GPS location:', location);
-
         setUserLocation(location);
-        setFlyToPos([location.lat, location.lng]); // fly map to user
+        setFlyToPos([location.lat, location.lng]);
         setNearMeActive(true);
         filterNearby(allPgs, location, radiusKm);
         setLocLoading(false);
       },
-      (err) => {
+      err => {
         console.error('❌ Location error:', err.code, err.message);
         setLocLoading(false);
         if (err.code === 1) {
@@ -200,7 +167,7 @@ export default function MapView() {
           alert('Unable to get location. Please try again.');
         }
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 } // maximumAge: 0 = always fresh GPS
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   };
 
@@ -210,7 +177,6 @@ export default function MapView() {
     if (userLocation && nearMeActive) filterNearby(allPgs, userLocation, newRadius);
   };
 
-  // ── Current list to show ─────────────────────────────────────────
   const listPgs = nearMeActive ? displayPgs : allPgs;
 
   return (
@@ -288,7 +254,6 @@ export default function MapView() {
               zoom={13}
               style={{ height: '100%', width: '100%' }}
             >
-              {/* Fly map when flyToPos changes (PG click or Near Me) */}
               {flyToPos && <FlyToMarker position={flyToPos} />}
 
               <MapComponents.TileLayer
@@ -299,12 +264,10 @@ export default function MapView() {
               {/* ── PG Markers ── */}
               {allPgs.map(pg => {
                 const coords = getCoords(pg);
-                if (!coords) return null; // ✅ skip PGs with no real coordinates
+                if (!coords) return null;
 
                 const { lat, lng } = coords;
-                const isNearby = nearMeActive
-                  ? displayPgs.some(d => d._id === pg._id)
-                  : true;
+                const isNearby = nearMeActive ? displayPgs.some(d => d._id === pg._id) : true;
                 const dist = userLocation
                   ? getDistanceKm(userLocation.lat, userLocation.lng, lat, lng)
                   : null;
@@ -355,21 +318,12 @@ export default function MapView() {
                   <MapComponents.Circle
                     center={[userLocation.lat, userLocation.lng]}
                     radius={120}
-                    pathOptions={{
-                      color: '#e55a28',
-                      fillColor: '#e55a28',
-                      fillOpacity: 0.9,
-                    }}
+                    pathOptions={{ color: '#e55a28', fillColor: '#e55a28', fillOpacity: 0.9 }}
                   />
                   <MapComponents.Circle
                     center={[userLocation.lat, userLocation.lng]}
                     radius={radiusKm * 1000}
-                    pathOptions={{
-                      color: '#e55a28',
-                      fillOpacity: 0.05,
-                      dashArray: '8 4',
-                      weight: 2,
-                    }}
+                    pathOptions={{ color: '#e55a28', fillOpacity: 0.05, dashArray: '8 4', weight: 2 }}
                   />
                 </>
               )}
@@ -403,9 +357,7 @@ export default function MapView() {
                 key={pg._id}
                 onClick={() => handlePGClick(pg)}
                 className={`glass rounded-xl border p-4 cursor-pointer transition-all hover:border-brand-500/40 ${
-                  selected?._id === pg._id
-                    ? 'border-brand-500/60 bg-brand-500/5'
-                    : 'border-white/5'
+                  selected?._id === pg._id ? 'border-brand-500/60 bg-brand-500/5' : 'border-white/5'
                 }`}
               >
                 <div className="flex gap-3">
@@ -423,12 +375,10 @@ export default function MapView() {
                       <MapPin size={10} />
                       {pg.location?.area}, {pg.location?.city}
                     </p>
-                    <div className="flex items-center justify-between mt-1.5">
-                      <span className="text-brand-400 text-sm font-semibold">
-                        ₹{pg.price?.toLocaleString()}
-                      </span>
-                      <StarRating rating={pg.rating} size="sm" />
-                    </div>
+                    <span className="text-brand-400 text-sm font-semibold mt-1 block">
+                      ₹{pg.price?.toLocaleString()}
+                      <span className="text-slate-500 text-xs font-normal">/mo</span>
+                    </span>
                     {pg.distanceKm !== undefined && pg.distanceKm !== null && (
                       <span
                         className="inline-block mt-1 text-xs px-2 py-0.5 rounded-full"
@@ -464,13 +414,10 @@ export default function MapView() {
                   <MapPin size={13} />
                   {selected.location?.area}, {selected.location?.city}
                 </p>
-                <div className="flex items-center gap-4 mt-2 flex-wrap">
-                  <span className="text-brand-400 font-bold text-lg">
-                    ₹{selected.price?.toLocaleString()}
-                    <span className="text-slate-500 text-xs font-normal">/mo</span>
-                  </span>
-                  <StarRating rating={selected.rating} reviews={selected.reviews} />
-                </div>
+                <span className="text-brand-400 font-bold text-lg mt-2 block">
+                  ₹{selected.price?.toLocaleString()}
+                  <span className="text-slate-500 text-xs font-normal">/mo</span>
+                </span>
                 {selected.distanceKm !== null && selected.distanceKm !== undefined && (
                   <span
                     className="inline-block mt-2 text-xs px-2 py-1 rounded-full"
@@ -499,5 +446,4 @@ export default function MapView() {
     </div>
   );
 }
-
 

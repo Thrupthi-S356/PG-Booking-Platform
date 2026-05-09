@@ -7,18 +7,18 @@ const cities = [
   'Bangalore', 'Mumbai', 'Hyderabad', 'Pune', 'Delhi', 'Chennai'
 ];
 
-const amenityOptions = [
-  'WiFi', 'Meals', 'AC', 'Laundry', 'Parking',
-  'Security', 'Gym', 'CCTV', 'Power Backup', 'Housekeeping'
-];
+// const amenityOptions = [
+//   'WiFi', 'Meals', 'AC', 'Laundry', 'Parking',
+//   'Security', 'Gym', 'CCTV', 'Power Backup', 'Housekeeping'
+// ];
 
 export default function FilterPanel({ filters, onChange, onReset }) {
   const update = (key, val) => onChange({ ...filters, [key]: val });
 
-  const toggleAmenity = (a) => {
-    const cur = filters.amenities || [];
-    update('amenities', cur.includes(a) ? cur.filter(x => x !== a) : [...cur, a]);
-  };
+  // const toggleAmenity = (a) => {
+  //   const cur = filters.amenities || [];
+  //   update('amenities', cur.includes(a) ? cur.filter(x => x !== a) : [...cur, a]);
+  // };
 
   return (
     <div className="glass rounded-2xl border border-white/5 p-5 space-y-6">
@@ -87,7 +87,7 @@ export default function FilterPanel({ filters, onChange, onReset }) {
       </div>
 
       {/* Amenities */}
-      <div>
+      {/* <div>
         <label className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-2 block">Amenities</label>
         <div className="space-y-2">
           {amenityOptions.map(a => (
@@ -107,7 +107,7 @@ export default function FilterPanel({ filters, onChange, onReset }) {
             </label>
           ))}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }
